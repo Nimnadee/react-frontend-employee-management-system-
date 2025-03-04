@@ -1,16 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-interface Employee {
-    employeeName: string;
-    salary: string;
-    dob: string;
-}
-
+import { addEmployee, Employee } from "../service/employee.service.ts";
 const AddEmployee: React.FC = () => {
     const navigate = useNavigate();
-    const [employee, setEmployee] = useState<Employee>({ employeeName: "", salary: "", dob: "" });
+    const [employee, setEmployee] = useState<Employee>({ employeeName: "", salary: 0, dob: "" });
     const [error, setError] = useState<string>("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +19,7 @@ const AddEmployee: React.FC = () => {
         }
 
         try {
-            await axios.post("http://localhost:8080/api/employees", { ...employee, salary: parseFloat(employee.salary) });
+            await addEmployee({ ...employee, salary: parseFloat(employee.salary.toString()) });
             navigate("/");
         } catch (error) {
             console.error("Error adding employee:", error);
