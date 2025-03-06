@@ -1,70 +1,94 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getEmployeeById, updateEmployee, Employee } from "../service/employee.service";
+import { Link } from "react-router-dom";
+import { getAllEmployees, deleteEmployee, Employee } from "../service/employee.service";
 
-const EditEmployee: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const [employee, setEmployee] = useState<Employee>({ employeeName: "", salary: 0, dob: "" });
-    const [error, setError] = useState<string>("");
+const EmployeeList: React.FC = () => {
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchEmployee = async () => {
-            try {
-                const data = await getEmployeeById(Number(id));
-                setEmployee({ ...data, dob: data.dob.split("T")[0] });
-            } catch (error) {
-                console.error("Error fetching employee:", error);
-                setError("Failed to load employee data");
-            }
-        };
-        fetchEmployee();
-    }, [id]);
+        fetchEmployees();
+    }, []);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmployee({ ...employee, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const fetchEmployees = async () => {
         try {
-            await updateEmployee(Number(id), { ...employee, salary: parseFloat(employee.salary.toString()) });
-            navigate("/");
+            const data = await getAllEmployees();
+            setEmployees(data);
         } catch (error) {
-            console.error("Error updating employee:", error);
-            setError("Failed to update employee. Please try again.");
+            console.error("Error fetching employees:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleDelete = async (id: number) => {
+        if (window.confirm("Are you sure you want to delete this employee?")) {
+            try {
+                await deleteEmployee(id);
+                fetchEmployees();
+            } catch (error) {
+                console.error("Error deleting employee:", error);
+            }
+        }
+    };
+
+    const formatDate = (dateString: string): string => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
-        <div className="employee-form">
-            <h2>Edit Employee</h2>
-            {error && <div className="error-message">{error}</div>}
+        <div className="employee-list">
+            <div className="list-header">
+                <h2>Employees</h2>
+                <Link to="/add-employee" className="btn-add">
+                    Add New Employee
+                </Link>
+            </div>
 
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Employee Name</label>
-                    <input type="text" name="employeeName" value={employee.employeeName} onChange={handleChange} required />
-                </div>
-
-                <div className="form-group">
-                    <label>Salary</label>
-                    <input type="number" name="salary" value={employee.salary} onChange={handleChange} min="0" step="0.01" required />
-                </div>
-
-                <div className="form-group">
-                    <label>Date of Birth</label>
-                    <input type="date" name="dob" value={employee.dob} onChange={handleChange} required />
-                </div>
-
-                <div className="form-actions">
-                    <button type="submit" className="btn-submit">Save Employee</button>
-                    <button type="button" className="btn-cancel" onClick={() => navigate("/")}>Cancel</button>
-                </div>
-            </form>
+            <table className="employee-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Salary</th>
+                    <th>Date of Birth</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {employees.length > 0 ? (
+                    employees.map((employee) => (
+                        <tr key={employee.employeeId}>
+                            <td>{employee.employeeId}</td>
+                            <td>{employee.employeeName}</td>
+                            <td>${employee.salary.toFixed(2)}</td>
+                            <td>{formatDate(employee.dob)}</td>
+                            <td className="actions">
+                                <Link to={`/edit-employee/${employee.employeeId}`} className="btn-edit">
+                                    Edit
+                                </Link>
+                                <button onClick={() => handleDelete(employee.employeeId!)} className="btn-delete">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan={5} className="no-data">
+                            No employees found
+                        </td>
+                    </tr>
+                )}
+                </tbody>
+            </table>
         </div>
     );
 };
 
-export default EditEmployee;
+export default EmployeeList;
