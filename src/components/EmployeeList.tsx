@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAllEmployees, deleteEmployee, Employee } from "../service/employee.service";
+import LogoutButton from "./LogoutButton.tsx";
 
 const EmployeeList: React.FC = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
@@ -42,52 +43,56 @@ const EmployeeList: React.FC = () => {
     }
 
     return (
-        <div className="employee-list">
-            <div className="list-header">
-                <h2>Employees</h2>
-                <Link to="/add-employee" className="btn-add">
-                    Add New Employee
-                </Link>
-            </div>
+        <>
+            <LogoutButton />
+            <div className="employee-list">
+                <div className="list-header">
+                    <h2>Employees</h2>
+                    <Link to="/add-employee" className="btn-add">
+                        Add New Employee
+                    </Link>
+                </div>
 
-            <table className="employee-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Salary</th>
-                    <th>Date of Birth</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {employees.length > 0 ? (
-                    employees.map((employee) => (
-                        <tr key={employee.employeeId}>
-                            <td>{employee.employeeId}</td>
-                            <td>{employee.employeeName}</td>
-                            <td>${employee.salary.toFixed(2)}</td>
-                            <td>{formatDate(employee.dob)}</td>
-                            <td className="actions">
-                                <Link to={`/edit-employee/${employee.employeeId}`} className="btn-edit">
-                                    Edit
-                                </Link>
-                                <button onClick={() => handleDelete(employee.employeeId!)} className="btn-delete">
-                                    Delete
-                                </button>
+                <table className="employee-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Salary</th>
+                        <th>Date of Birth</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {employees.length > 0 ? (
+                        employees.map((employee) => (
+                            <tr key={employee.employeeId}>
+                                <td>{employee.employeeId}</td>
+                                <td>{employee.employeeName}</td>
+                                <td>${employee.salary.toFixed(2)}</td>
+                                <td>{formatDate(employee.dob)}</td>
+                                <td className="actions">
+                                    <Link to={`/edit-employee/${employee.employeeId}`} className="btn-edit">
+                                        Edit
+                                    </Link>
+                                    <button onClick={() => handleDelete(employee.employeeId!)} className="btn-delete">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={5} className="no-data">
+                                No employees found
                             </td>
                         </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan={5} className="no-data">
-                            No employees found
-                        </td>
-                    </tr>
-                )}
-                </tbody>
-            </table>
-        </div>
+                    )}
+                    </tbody>
+                </table>
+            </div>
+        </>
+
     );
 };
 

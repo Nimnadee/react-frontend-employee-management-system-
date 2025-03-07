@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addEmployee, Employee } from "../service/employee.service.ts";
+import LogoutButton from "./LogoutButton.tsx";
 const AddEmployee: React.FC = () => {
     const navigate = useNavigate();
     const [employee, setEmployee] = useState<Employee>({ employeeName: "", salary: 0, dob: "" });
@@ -20,7 +21,7 @@ const AddEmployee: React.FC = () => {
 
         try {
             await addEmployee({ ...employee, salary: parseFloat(employee.salary.toString()) });
-            navigate("/");
+            navigate("/employee-list");
         } catch (error) {
             console.error("Error adding employee:", error);
             setError("Failed to add employee. Please try again.");
@@ -29,6 +30,7 @@ const AddEmployee: React.FC = () => {
 
     return (
         <div className="employee-form">
+            <LogoutButton />
             <h2>Add New Employee</h2>
             {error && <div className="error-message">{error}</div>}
 
